@@ -1,0 +1,747 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinStar OS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: url('{% static "images/wallpaper.jpg" %}') center/cover;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none; /* Prevents text selection while dragging */
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            height: 24px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+        }
+
+        .left-items, .right-items {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .apple-logo {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .app-name {
+            font-weight: 500;
+        }
+
+        .contact {
+            opacity: 0.8;
+        }
+
+        .time {
+            opacity: 0.8;
+        }
+
+        /* Dock */
+        .dock {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 8px;
+            border-radius: 18px;
+            display: flex;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        }
+
+        .dock-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            transition: transform 0.2s;
+            cursor: default;
+        }
+
+        /* Dock hover effect */
+        .dock:hover .dock-icon {
+            transform: translateY(0px);
+        }
+
+        .dock-icon:hover {
+            transform: scale(1.2) translateY(-10px) !important;
+        }
+
+        /* Desktop Icons */
+        .desktop {
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 20px;
+            height: calc(100vh - 24px);
+            margin-top: 24px;
+        }
+
+        .folder {
+            width: 80px;
+            text-align: center;
+            cursor: default;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+            position: relative; /* Added for absolute positioning of children */
+            transition: transform 0.15s ease;
+        }
+
+        .folder:active {
+            cursor: grab;
+        }
+
+        .folder img {
+            width: 60px;
+            height: 60px;
+            filter: none;  /* Removed invert filter */
+            margin-bottom: 5px;
+            pointer-events: none; /* Prevents image from interfering with drag */
+        }
+
+        .folder p {
+            font-size: 13px;
+            margin-top: 5px;
+            pointer-events: none; /* Prevents text from interfering with drag */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 5px;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 15px;
+            border-radius: 10px;
+            width: 500px;
+            max-width: 90%;
+            display: none;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            .dock {
+                width: 90%;
+                padding: 6px;
+            }
+            
+            .dock-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .folder {
+                width: 60px;
+            }
+
+            .folder img {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        /* Add these new styles */
+        .window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 500px;
+            background: rgba(35, 35, 35, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .window-header {
+            height: 38px;
+            background: rgba(45, 45, 45, 0.9);
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .window-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .close {
+            background: #ff5f57;
+        }
+
+        .minimize {
+            background: #febc2e;
+        }
+
+        .maximize {
+            background: #28c840;
+        }
+
+        .window-title {
+            color: #fff;
+            font-size: 13px;
+            margin-left: 5px;
+            opacity: 0.8;
+        }
+
+        .window-content {
+            color: #fff;
+            padding: 20px;
+            height: calc(100% - 38px);
+            overflow: auto;
+        }
+
+        @media (max-width: 868px) {
+            .window {
+                width: 90%;
+                height: 80vh;
+            }
+        }
+
+        /* Add these styles */
+        .drop-zone {
+            width: 100%;
+            height: 100%;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .drop-zone-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: auto;
+        }
+
+        .file-item {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: move;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .file-item.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .file-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-item .file-icon {
+            width: 100%;
+            height: 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .file-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px;
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="left-items">
+            <span class="apple-logo">★</span>
+            <span class="app-name">Made by Lothar Tjipueja</span>
+        </div>
+        <div class="right-items">
+            <span class="contact">lotharwebdev@gmail.com</span>
+            <span class="time" id="clock"></span>
+        </div>
+    </div>
+
+    <div class="desktop" id="desktop">
+        <div class="folder" draggable="true">
+            <img src="{% static 'images/folder.png' %}" alt="Documents">
+            <p>Documents</p>
+        </div>
+        <div class="folder" draggable="true">
+            <img src="{% static 'images/folder.png' %}" alt="Downloads">
+            <p>Downloads</p>
+        </div>
+        <div class="folder" draggable="true">
+            <img src="{% static 'images/folder.png' %}" alt="Pictures">
+            <p>Pictures</p>
+        </div>
+    </div>
+
+    <div class="dock">
+        <img src="{% static 'images/home.png' %}" class="dock-icon" alt="Finder">
+        <img src="{% static 'images/chrome.png' %}" class="dock-icon" alt="Chrome">
+        <img src="{% static 'images/vscode.png' %}" class="dock-icon" alt="VS Code">
+        <img src="{% static 'images/settings.png' %}" class="dock-icon" alt="Settings">
+    </div>
+
+    <div class="search-bar">
+        <input type="text" placeholder="Search VinStar OS...">
+    </div>
+
+    <!-- Add this window template -->
+    <div class="window" id="folder-window">
+        <div class="window-header">
+            <div class="window-controls">
+                <div class="window-control close" id="close-window"></div>
+                <div class="window-control minimize"></div>
+                <div class="window-control maximize"></div>
+            </div>
+            <span class="window-title">Documents</span>
+        </div>
+        <div class="window-content">
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone-text">Drop files here or click to upload</div>
+                <input type="file" id="file-input" multiple style="display: none;" accept="*/*">
+                <div class="files-grid" id="files-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Updated cursor behavior
+        const folders = document.querySelectorAll('.folder');
+        const dockIcons = document.querySelectorAll('.dock-icon');
+        let pressTimer;
+
+        // Function to handle long press
+        function handleLongPress(element) {
+            pressTimer = setTimeout(() => {
+                element.style.cursor = 'grab';
+            }, 500); // 500ms for long press
+        }
+
+        // Function to clear long press
+        function clearLongPress(element) {
+            clearTimeout(pressTimer);
+            element.style.cursor = 'default';
+        }
+
+        // Add long press detection to folders and dock icons
+        [...folders, ...dockIcons].forEach(element => {
+            element.addEventListener('mousedown', () => handleLongPress(element));
+            element.addEventListener('mouseup', () => clearLongPress(element));
+            element.addEventListener('mouseleave', () => clearLongPress(element));
+        });
+
+        // Drag and Drop functionality
+        const desktop = document.getElementById('desktop');
+
+        folders.forEach(folder => {
+            folder.addEventListener('dragstart', (e) => {
+                e.target.classList.add('dragging');
+                e.target.style.opacity = '0.5';
+            });
+
+            folder.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+                e.target.style.opacity = '1';
+                // Ensure the folder and its contents stay together
+                const { clientX, clientY } = e;
+                e.target.style.position = 'absolute';
+                e.target.style.left = `${clientX - e.target.offsetWidth / 2}px`;
+                e.target.style.top = `${clientY - e.target.offsetHeight / 2}px`;
+            });
+        });
+
+        desktop.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggable = document.querySelector('.dragging');
+            if (draggable) {
+                const { clientX, clientY } = e;
+                draggable.style.position = 'absolute';
+                draggable.style.left = `${clientX - draggable.offsetWidth / 2}px`;
+                draggable.style.top = `${clientY - draggable.offsetHeight / 2}px`;
+            }
+        });
+
+        // Search functionality
+        document.addEventListener('keydown', (e) => {
+            if (e.metaKey && e.key === 'k' || e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                const searchBar = document.querySelector('.search-bar');
+                searchBar.style.display = searchBar.style.display === 'none' ? 'block' : 'none';
+                if (searchBar.style.display === 'block') {
+                    searchBar.querySelector('input').focus();
+                }
+            }
+        });
+
+        // Close search on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelector('.search-bar').style.display = 'none';
+            }
+        });
+
+        // Dock hover effect
+        const dock = document.querySelector('.dock');
+        dock.addEventListener('mousemove', (e) => {
+            const icons = document.querySelectorAll('.dock-icon');
+            const mouseX = e.clientX;
+            
+            icons.forEach(icon => {
+                const rect = icon.getBoundingClientRect();
+                const iconX = rect.left + rect.width / 2;
+                const distance = Math.abs(mouseX - iconX);
+                const scale = Math.max(1, 1.5 - distance / 100);
+                icon.style.transform = `scale(${scale})`;
+            });
+        });
+
+        dock.addEventListener('mouseleave', () => {
+            const icons = document.querySelectorAll('.dock-icon');
+            icons.forEach(icon => {
+                icon.style.transform = 'scale(1)';
+            });
+        });
+
+        // Add clock functionality
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            document.getElementById('clock').textContent = time;
+        }
+        
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Add this to your existing JavaScript
+        const folderWindow = document.getElementById('folder-window');
+        const closeButton = document.getElementById('close-window');
+
+        // Handle folder double click
+        folders.forEach(folder => {
+            folder.addEventListener('dblclick', (e) => {
+                const folderName = folder.querySelector('p').textContent;
+                folderWindow.querySelector('.window-title').textContent = folderName;
+                folderWindow.style.display = 'block';
+                
+                // Add animation
+                folderWindow.style.opacity = '0';
+                folderWindow.style.transform = 'translate(-50%, -48%) scale(0.98)';
+                requestAnimationFrame(() => {
+                    folderWindow.style.transition = 'all 0.2s ease-out';
+                    folderWindow.style.opacity = '1';
+                    folderWindow.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+            });
+        });
+
+        // Handle close button
+        closeButton.addEventListener('click', () => {
+            folderWindow.style.opacity = '0';
+            folderWindow.style.transform = 'translate(-50%, -48%) scale(0.98)';
+            setTimeout(() => {
+                folderWindow.style.display = 'none';
+                folderWindow.style.transition = '';
+            }, 200);
+        });
+
+        // Close window when clicking outside
+        document.addEventListener('mousedown', (e) => {
+            if (!folderWindow.contains(e.target) && 
+                !e.target.closest('.folder') && 
+                folderWindow.style.display === 'block') {
+                closeButton.click();
+            }
+        });
+
+        // Make window draggable
+        const windowHeader = folderWindow.querySelector('.window-header');
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        windowHeader.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        function dragStart(e) {
+            if (e.target.closest('.window-controls')) return;
+            
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === windowHeader) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+
+                xOffset = currentX;
+                yOffset = currentY;
+
+                setTranslate(currentX, currentY, folderWindow);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Add this to your existing JavaScript
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const filesGrid = document.getElementById('files-grid');
+
+        // Handle drag and drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('drag-over');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('drag-over');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFiles);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files: files } });
+        }
+
+        function handleFiles(e) {
+            const files = [...e.target.files];
+            files.forEach(uploadFile);
+        }
+
+        function getFileIcon(fileType) {
+            if (fileType.startsWith('image/')) return '📸';
+            if (fileType.startsWith('video/')) return '🎥';
+            if (fileType.startsWith('audio/')) return '🎵';
+            if (fileType.includes('pdf')) return '📄';
+            if (fileType.includes('word')) return '📝';
+            if (fileType.includes('excel') || fileType.includes('spreadsheet')) return '📊';
+            return '📁';
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch('', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addFileToGrid(data.file_url, data.file_name, file.type);
+                }
+            });
+        }
+
+        function addFileToGrid(url, name, fileType) {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.draggable = true;
+
+            const isImage = fileType.startsWith('image/');
+            const content = isImage 
+                ? `<img src="${url}" alt="${name}">`
+                : `<div class="file-icon">${getFileIcon(fileType)}</div>`;
+
+            div.innerHTML = `
+                ${content}
+                <div class="file-name">${name}</div>
+            `;
+            filesGrid.appendChild(div);
+
+            // Make the file item draggable
+            div.addEventListener('dragstart', (e) => {
+                div.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    url: url,
+                    name: name,
+                    type: fileType
+                }));
+            });
+
+            div.addEventListener('dragend', () => {
+                div.classList.remove('dragging');
+            });
+
+            // Hide the drop zone text if we have files
+            const dropZoneText = dropZone.querySelector('.drop-zone-text');
+            if (dropZoneText) {
+                dropZoneText.style.display = 'none';
+            }
+        }
+
+        // Add drag and drop within the window
+        filesGrid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            if (!draggingItem) return;
+
+            const afterElement = getDragAfterElement(filesGrid, e.clientY);
+            if (afterElement) {
+                filesGrid.insertBefore(draggingItem, afterElement);
+            } else {
+                filesGrid.appendChild(draggingItem);
+            }
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.file-item:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+    </script>
+</body>
+</html>
