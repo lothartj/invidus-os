@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: django-app
+    env: docker
+    buildCommand: docker build -t app .
+    startCommand: docker run -p $PORT:8000 app
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: False
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com 

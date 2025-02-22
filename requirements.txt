@@ -1,2 +1,7 @@
 requests
 beautifulsoup4
+django
+gunicorn
+whitenoise
+psycopg2-binary
+python-dotenv
