@@ -51,6 +51,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
 ROOT_URLCONF = 'project.urls'
 
 TEMPLATES = [

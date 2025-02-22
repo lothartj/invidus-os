@@ -342,6 +342,135 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Add these new styles */
+        #chrome-window {
+            width: 900px;
+            height: 600px;
+            background: rgba(35, 35, 35, 0.95);
+        }
+
+        .chrome-tabs {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+            flex: 1;
+            height: 32px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .chrome-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chrome-tab {
+            display: flex;
+            align-items: center;
+            background: rgba(60, 60, 60, 0.8);
+            border-radius: 8px 8px 0 0;
+            padding: 8px 15px;
+            margin-right: 5px;
+            min-width: 100px;
+            max-width: 180px;
+            height: 28px;
+            color: #fff;
+            font-size: 12px;
+            cursor: default;
+        }
+
+        .chrome-tab.active {
+            background: rgba(80, 80, 80, 0.9);
+        }
+
+        .tab-favicon {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .chrome-new-tab {
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .chrome-toolbar {
+            height: 40px;
+            background: rgba(45, 45, 45, 0.9);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+        }
+
+        .chrome-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-button {
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chrome-search-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 5px 15px;
+        }
+
+        .search-icon {
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        .chrome-search-bar input {
+            background: none;
+            border: none;
+            color: #fff;
+            flex: 1;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .chrome-content {
+            height: calc(100% - 110px);
+            background: #fff;
+        }
+
+        .chrome-content iframe {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+        }
+
+        .tab-close {
+            margin-left: 8px;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+
+        .tab-close:hover {
+            opacity: 1;
+        }
+
+        .chrome-tab {
+            position: relative;
+            padding-right: 25px;
+        }
     </style>
 </head>
 <body>
@@ -398,6 +527,52 @@
                 <input type="file" id="file-input" multiple style="display: none;" accept="*/*">
                 <div class="files-grid" id="files-grid"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Update the Chrome window structure - remove the static iframe -->
+    <div class="window" id="chrome-window" style="display: none;">
+        <div class="window-header">
+            <div class="window-controls">
+                <div class="window-control close" id="close-chrome"></div>
+                <div class="window-control minimize"></div>
+                <div class="window-control maximize"></div>
+            </div>
+            <div class="chrome-tabs">
+                <!-- Tabs will be dynamically added here -->
+            </div>
+        </div>
+        <div class="chrome-toolbar">
+            <div class="chrome-controls">
+                <span class="nav-button" id="back-button">←</span>
+                <span class="nav-button" id="forward-button">→</span>
+                <span class="nav-button" id="refresh-button">↻</span>
+            </div>
+            <div class="chrome-search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search or enter website">
+            </div>
+        </div>
+        <div class="chrome-content">
+            <!-- iframes will be created dynamically -->
+        </div>
+    </div>
+
+    <!-- Add VSCode functionality -->
+    <div class="window" id="vscode-window" style="display: none;">
+        <div class="window-header">
+            <div class="window-controls">
+                <div class="window-control close" id="close-vscode"></div>
+                <div class="window-control minimize"></div>
+                <div class="window-control maximize"></div>
+            </div>
+            <div class="window-title">
+                <img src="{% static 'images/vscode.png' %}" alt="VS Code" style="height: 16px; margin-right: 8px;">
+                Visual Studio Code
+            </div>
+        </div>
+        <div class="vscode-content">
+            <!-- iframe will be created dynamically -->
         </div>
     </div>
 
@@ -742,6 +917,461 @@
                 }
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
+
+        // Add this to your existing JavaScript
+        const chromeIcon = document.querySelector('.dock-icon[alt="Chrome"]');
+        const chromeWindow = document.getElementById('chrome-window');
+        const closeChrome = document.getElementById('close-chrome');
+        const chromeSearchBar = document.querySelector('.chrome-search-bar input');
+
+        chromeIcon.addEventListener('click', () => {
+            chromeWindow.style.display = 'block';
+            chromeWindow.style.opacity = '0';
+            chromeWindow.style.transform = 'translate(-50%, -48%) scale(0.98)';
+            requestAnimationFrame(() => {
+                chromeWindow.style.transition = 'all 0.2s ease-out';
+                chromeWindow.style.opacity = '1';
+                chromeWindow.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+
+        closeChrome.addEventListener('click', () => {
+            chromeWindow.style.opacity = '0';
+            chromeWindow.style.transform = 'translate(-50%, -48%) scale(0.98)';
+            setTimeout(() => {
+                chromeWindow.style.display = 'none';
+                chromeWindow.style.transition = '';
+            }, 200);
+        });
+
+        // Make Chrome window draggable
+        const chromeHeader = chromeWindow.querySelector('.window-header');
+        chromeHeader.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.chrome-tabs') && !e.target.closest('.window-controls')) {
+                dragStart(e);
+            }
+        });
+
+        // Handle Chrome search
+        chromeSearchBar.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const url = chromeSearchBar.value.trim();
+                const iframe = document.querySelector('.chrome-content iframe');
+                const tabTitle = document.querySelector('.tab-title');
+                const tabFavicon = document.querySelector('.tab-favicon');
+                
+                if (!url) return;
+                
+                // Show loading state
+                iframe.style.opacity = '0.5';
+                tabTitle.textContent = 'Loading...';
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('url', url);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    
+                    const response = await fetch('{% url "chrome_view" %}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        // Update tab info
+                        tabTitle.textContent = data.title || url;
+                        if (data.favicon) {
+                            tabFavicon.innerHTML = `<img src="${data.favicon}" onerror="this.src='{% static 'images/globe.png' %}'" style="width: 16px; height: 16px;">`;
+                        }
+                        
+                        // Update search bar with final URL
+                        chromeSearchBar.value = data.url || url;
+                        
+                        // Create a blob from the HTML content
+                        const blob = new Blob([data.content], { type: 'text/html' });
+                        const blobUrl = URL.createObjectURL(blob);
+                        
+                        // Load the content in the iframe
+                        iframe.src = blobUrl;
+                        
+                        // Clean up the blob URL when the iframe loads
+                        iframe.onload = () => {
+                            URL.revokeObjectURL(blobUrl);
+                            iframe.style.opacity = '1';
+                        };
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    tabTitle.textContent = 'Error';
+                    tabFavicon.textContent = '❌';
+                    console.error('Failed to load page:', error);
+                    iframe.style.opacity = '1';
+                    
+                    // Show error in iframe
+                    iframe.srcdoc = `
+                        <style>
+                            body {
+                                font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                                margin: 0;
+                                background: #f8f9fa;
+                                color: #343a40;
+                            }
+                            .error {
+                                text-align: center;
+                                padding: 20px;
+                            }
+                            .error-icon {
+                                font-size: 48px;
+                                margin-bottom: 20px;
+                            }
+                        </style>
+                        <div class="error">
+                            <div class="error-icon">❌</div>
+                            <h2>Failed to load page</h2>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        // Chrome tab management
+        const chromeTabs = document.querySelector('.chrome-tabs');
+        const newTabButton = document.createElement('div');
+        newTabButton.className = 'chrome-new-tab';
+        newTabButton.textContent = '+';
+        chromeTabs.appendChild(newTabButton);
+
+        let tabCounter = 0;
+        const tabs = [];
+
+        function activateTab(tabData) {
+            // Deactivate all tabs
+            tabs.forEach(tab => {
+                tab.element.classList.remove('active');
+                if (tab.iframe) tab.iframe.style.display = 'none';
+            });
+            
+            // Activate the selected tab
+            tabData.element.classList.add('active');
+            if (tabData.iframe) {
+                tabData.iframe.style.display = 'block';
+                chromeSearchBar.value = tabData.url || '';
+            }
+        }
+
+        function closeTab(tabData) {
+            const index = tabs.indexOf(tabData);
+            if (index > -1) {
+                // Remove the tab and its iframe
+                tabData.element.remove();
+                tabData.iframe.remove();
+                tabs.splice(index, 1);
+                
+                // If this was the active tab, activate another one
+                if (tabData.element.classList.contains('active')) {
+                    const newTab = tabs[Math.max(0, index - 1)];
+                    if (newTab) {
+                        activateTab(newTab);
+                    } else {
+                        // If no tabs left, create a new one
+                        createTab();
+                    }
+                }
+            }
+        }
+
+        function createTab(active = true) {
+            const tab = document.createElement('div');
+            tab.className = `chrome-tab ${active ? 'active' : ''}`;
+            tab.innerHTML = `
+                <span class="tab-favicon">🌐</span>
+                <span class="tab-title">New Tab</span>
+                <span class="tab-close">×</span>
+            `;
+            
+            chromeTabs.insertBefore(tab, newTabButton);
+            
+            const iframe = document.createElement('iframe');
+            iframe.frameBorder = '0';
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.style.display = active ? 'block' : 'none';
+            // Remove allow-same-origin from sandbox to prevent escaping
+            iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals';
+            
+            document.querySelector('.chrome-content').appendChild(iframe);
+            
+            const tabData = {
+                id: tabCounter++,
+                element: tab,
+                title: 'New Tab',
+                favicon: '🌐',
+                url: '',
+                iframe: iframe,
+                history: [],
+                historyIndex: -1
+            };
+            
+            tabs.push(tabData);
+            
+            tab.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('tab-close')) {
+                    activateTab(tabData);
+                }
+            });
+
+            tab.querySelector('.tab-close').addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeTab(tabData);
+            });
+
+            if (active) {
+                activateTab(tabData);
+            }
+
+            return tabData;
+        }
+
+        async function loadUrlInTab(tabData, url) {
+            try {
+                tabData.iframe.style.opacity = '0.5';
+                tabData.element.querySelector('.tab-title').textContent = 'Loading...';
+                
+                const formData = new FormData();
+                formData.append('url', url);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                
+                const response = await fetch('{% url "chrome_view" %}', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Update tab info
+                    tabData.title = data.title || url;
+                    tabData.url = data.url || url;
+                    tabData.element.querySelector('.tab-title').textContent = tabData.title;
+                    
+                    if (data.favicon) {
+                        tabData.element.querySelector('.tab-favicon').innerHTML = 
+                            `<img src="${data.favicon}" onerror="this.src='{% static 'images/globe.png' %}'" style="width: 16px; height: 16px;">`;
+                    }
+                    
+                    // Update search bar if this is the active tab
+                    if (tabData.element.classList.contains('active')) {
+                        chromeSearchBar.value = tabData.url;
+                    }
+                    
+                    // Create and load blob
+                    const blob = new Blob([data.content], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    tabData.iframe.src = blobUrl;
+                    
+                    // Add to history
+                    tabData.historyIndex++;
+                    tabData.history.splice(tabData.historyIndex);
+                    tabData.history.push(tabData.url);
+                    
+                    tabData.iframe.onload = () => {
+                        URL.revokeObjectURL(blobUrl);
+                        tabData.iframe.style.opacity = '1';
+                    };
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                handleError(tabData, error);
+            }
+        }
+
+        // Update the search handler
+        chromeSearchBar.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const url = chromeSearchBar.value.trim();
+                const activeTab = tabs.find(tab => tab.element.classList.contains('active'));
+                if (!activeTab || !url) return;
+                
+                loadUrlInTab(activeTab, url);
+            }
+        });
+
+        // Add navigation button handlers
+        document.getElementById('back-button').addEventListener('click', () => {
+            const activeTab = tabs.find(tab => tab.element.classList.contains('active'));
+            if (activeTab && activeTab.historyIndex > 0) {
+                activeTab.historyIndex--;
+                loadUrlInTab(activeTab, activeTab.history[activeTab.historyIndex]);
+            }
+        });
+
+        document.getElementById('forward-button').addEventListener('click', () => {
+            const activeTab = tabs.find(tab => tab.element.classList.contains('active'));
+            if (activeTab && activeTab.historyIndex < activeTab.history.length - 1) {
+                activeTab.historyIndex++;
+                loadUrlInTab(activeTab, activeTab.history[activeTab.historyIndex]);
+            }
+        });
+
+        document.getElementById('refresh-button').addEventListener('click', () => {
+            const activeTab = tabs.find(tab => tab.element.classList.contains('active'));
+            if (activeTab && activeTab.url) {
+                loadUrlInTab(activeTab, activeTab.url);
+            }
+        });
+
+        // Create initial tab
+        createTab();
+
+        // Add new tab button handler
+        newTabButton.addEventListener('click', () => {
+            createTab(true);
+        });
+
+        // Add message listener for iframe navigation
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'navigation') {
+                const activeTab = tabs.find(tab => tab.element.classList.contains('active'));
+                if (activeTab) {
+                    loadUrlInTab(activeTab, event.data.url);
+                }
+            }
+        });
+
+        // Add VSCode functionality
+        const vscodeIcon = document.querySelector('.dock-icon[alt="VS Code"]');
+        const vscodeWindow = document.createElement('div');
+        vscodeWindow.className = 'window';
+        vscodeWindow.id = 'vscode-window';
+        vscodeWindow.style.display = 'none';
+        vscodeWindow.innerHTML = `
+            <div class="window-header">
+                <div class="window-controls">
+                    <div class="window-control close" id="close-vscode"></div>
+                    <div class="window-control minimize"></div>
+                    <div class="window-control maximize"></div>
+                </div>
+                <div class="window-title">
+                    <img src="{% static 'images/vscode.png' %}" alt="VS Code" style="height: 16px; margin-right: 8px;">
+                    Visual Studio Code
+                </div>
+            </div>
+            <div class="vscode-content">
+                <!-- iframe will be created dynamically -->
+            </div>
+        `;
+        document.body.appendChild(vscodeWindow);
+
+        // Add VSCode styles
+        const style = document.createElement('style');
+        style.textContent = `
+            #vscode-window {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90vw;
+                height: 90vh;
+                background: #1e1e1e;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+            .vscode-content {
+                height: calc(100% - 38px);
+                background: #1e1e1e;
+            }
+            .vscode-content iframe {
+                border: none;
+                background: #1e1e1e;
+            }
+            #vscode-window .window-title {
+                display: flex;
+                align-items: center;
+                color: #cccccc;
+            }
+            #vscode-window .window-header {
+                background: #2d2d2d;
+                border-bottom: 1px solid #1e1e1e;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add VSCode event listeners
+        const closeVSCode = vscodeWindow.querySelector('#close-vscode');
+
+        vscodeIcon.addEventListener('click', async () => {
+            vscodeWindow.style.display = 'block';
+            vscodeWindow.style.opacity = '0';
+            vscodeWindow.style.transform = 'translate(-50%, -48%) scale(0.98)';
+            
+            try {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                
+                const response = await fetch('{% url "vscode_view" %}', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const blob = new Blob([data.content], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    iframe.src = blobUrl;
+                    
+                    const content = vscodeWindow.querySelector('.vscode-content');
+                    content.innerHTML = '';
+                    content.appendChild(iframe);
+                    
+                    iframe.onload = () => {
+                        URL.revokeObjectURL(blobUrl);
+                    };
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Failed to load VSCode:', error);
+                const content = vscodeWindow.querySelector('.vscode-content');
+                content.innerHTML = `
+                    <div style="color: #cccccc; padding: 20px; text-align: center;">
+                        <h2>Failed to load VSCode</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+            
+            requestAnimationFrame(() => {
+                vscodeWindow.style.transition = 'all 0.2s ease-out';
+                vscodeWindow.style.opacity = '1';
+                vscodeWindow.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+
+        // Make VSCode window draggable
+        const vscodeHeader = vscodeWindow.querySelector('.window-header');
+        vscodeHeader.addEventListener('mousedown', dragStart);
     </script>
 </body>
 </html>

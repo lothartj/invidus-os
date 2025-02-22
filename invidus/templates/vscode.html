@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Studio Code</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', monospace;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .vscode-container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 50px;
+            background: #333333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 10px;
+        }
+        .explorer {
+            width: 250px;
+            background: #252526;
+            border-right: 1px solid #3c3c3c;
+        }
+        .main-content {
+            flex: 1;
+            background: #1e1e1e;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .sidebar-icon {
+            width: 30px;
+            height: 30px;
+            margin: 5px 0;
+            color: #858585;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .sidebar-icon:hover {
+            color: #ffffff;
+        }
+        .explorer-header {
+            padding: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #858585;
+        }
+        .file-tree {
+            padding: 10px;
+        }
+        .file-item {
+            padding: 3px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .file-item:hover {
+            background: #2a2d2e;
+        }
+        pre {
+            margin: 0;
+            padding: 0;
+        }
+        code {
+            font-family: 'Consolas', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="vscode-container">
+        <div class="sidebar">
+            <div class="sidebar-icon">📁</div>
+            <div class="sidebar-icon">🔍</div>
+            <div class="sidebar-icon">⑂</div>
+            <div class="sidebar-icon">⚙️</div>
+        </div>
+        <div class="explorer">
+            <div class="explorer-header">Explorer</div>
+            <div class="file-tree">
+                <div class="file-item">📄 index.html</div>
+                <div class="file-item">📄 styles.css</div>
+                <div class="file-item">📄 script.js</div>
+            </div>
+        </div>
+        <div class="main-content">
+            <pre><code>// Welcome to VSCode
+// Start coding here...</code></pre>
+        </div>
+    </div>
+</body>
+</html> 

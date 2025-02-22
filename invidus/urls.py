@@ -1,7 +1,11 @@
 from django.contrib import admin
 from django.urls import path
-from .views import *
+from . import views
+from . import viewschrome
+from . import viewsvscode
 
 urlpatterns = [
-    path('',home,name='index'),
+    path('', views.home, name='home'),
+    path('chrome/', viewschrome.chrome_view, name='chrome_view'),
+    path('vscode/', viewsvscode.vscode_view, name='vscode_view'),
 ]
